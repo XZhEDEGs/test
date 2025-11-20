@@ -17,18 +17,23 @@ jobs:
 
       - name: Download file from SourceForge
         run: |
-          # 自动获取文件名（从下载链接解析）
           file_name=$(basename "${{ github.event.inputs.download_url }}")
           echo "file_name=$file_name" >> $GITHUB_ENV
           wget -O "$file_name" "${{ github.event.inputs.download_url }}"
 
-      - name: Create or Update Release
+      - name: Delete old release if exists
+        run: |
+          gh release delete v1.0.0 -y || true
+          git push origin :refs/tags/v1.0.0 || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Release and Upload
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v1.0.0
           name: ${{ env.file_name }}
           body: "通过 GitHub Actions 自动下载并上传的文件"
           files: ${{ env.file_name }}
-          overwrite: true   # 自动覆盖旧文件
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
