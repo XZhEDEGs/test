@@ -1,10 +1,10 @@
-name: Download SourceForge File and Upload to Release
+name: Download File and Upload to Release
 
 on:
   workflow_dispatch:
     inputs:
       download_url:
-        description: '请输入 SourceForge 文件下载链接'
+        description: '请输入文件下载链接'
         required: true
         type: string
 
@@ -15,18 +15,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Download file from SourceForge
+      - name: Download file
         run: |
           file_name=$(basename "${{ github.event.inputs.download_url }}")
           echo "file_name=$file_name" >> $GITHUB_ENV
           wget -O "$file_name" "${{ github.event.inputs.download_url }}"
-
-      - name: Delete old release if exists
-        run: |
-          gh release delete v1.0.0 -y || true
-          git push origin :refs/tags/v1.0.0 || true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Release and Upload
         uses: softprops/action-gh-release@v1
